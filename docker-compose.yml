@@ -1,0 +1,54 @@
+
+x-logging: &default-logging
+  logging:
+    options:
+      max-size: '50m'
+      max-file: '5'
+    driver: json-file
+
+x-db-vars: &db-vars
+  POSTGRES_HOST: "backend-db"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "postgres"
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "postgres"
+  PGDATA: "/var/lib/postgresql/data/"
+
+services:
+    backend-app:
+        build:
+            context: ./app
+            target: "app"
+        <<: *default-logging
+        volumes:
+            - "./app:/srv/app/"
+            - "backend-app-static:/srv/static/"
+        ports:
+            - 8000:8000
+        depends_on:
+            - backend-db
+            - backend-redis
+        command: gunicorn -c gunicorn/config.py server.core.wsgi:application
+
+    backend-db:
+        image: postgres:12-alpine
+        ports:
+          - "5432:5432"
+        <<: *default-logging
+        volumes:
+            - "backend-app-db:/var/lib/postgresql/data"
+        environment: *db-vars
+
+    backend-redis:
+        image: redis:alpine
+        <<: *default-logging
+        expose:
+          - "6379"
+        volumes:
+          - "backend-app-redis:/data/"
+
+
+volumes:
+    backend-app-db:
+    backend-app-redis:
+    backend-app-static:

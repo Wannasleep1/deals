@@ -1,0 +1,8 @@
+# Pycharm
+.idea/
+
+Dockerfile
+venv
+
+__pycache__/
+*.py[cod]

@@ -9,11 +9,11 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-w^t*o5&g!v_-mh$#sjur394s4jv6b1cq$%gtl@9vqwjdg$xv7+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Разрешаем все хосты
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # packages
+    'rest_framework',
+    'debug_toolbar',
+
+    # project apps
+    'server.apps.deals',
 ]
 
 MIDDLEWARE = [
@@ -49,7 +57,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'deals.urls'
+ROOT_URLCONF = 'server.core.urls'
 
 TEMPLATES = [
     {
@@ -67,7 +75,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'deals.wsgi.application'
+WSGI_APPLICATION = 'server.core.wsgi.application'
 
 
 # Database
@@ -75,9 +83,25 @@ WSGI_APPLICATION = 'deals.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'HOST': "backend-db",
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'PORT': 5432,
+    },
+}
+
+
+# Cache settings
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://backend-redis:6379/",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
 }
 
 
@@ -116,8 +140,43 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR.parent / 'static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'formatters': {
+        'additional_verbose': {
+            'format': '\n\033[1;34m({levelname}) | {name} | [{asctime}]\033[23;0;0m\n'
+                      '\033[3;38;5;226mFile "{pathname}:{lineno}"\033[23;38;5;87m - {funcName}()\n'
+                      '\033[1;34mMessage\033[23;38;5;134m "{message}"\033[23;0;0m\n',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'color_console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'additional_verbose',
+            'filters': ['require_debug_true'],
+        },
+    },
+    'loggers': {
+        'server': {
+            'handlers': ['color_console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    }
+}
