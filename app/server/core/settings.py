@@ -28,11 +28,12 @@ DEBUG = True
 # Разрешаем все хосты
 ALLOWED_HOSTS = ['*']
 
-INTERNAL_IPS = ["127.0.0.1"]
-
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK": lambda request: True,
-}
+# Debug toolbar settings
+if DEBUG:
+    INTERNAL_IPS = ["127.0.0.1"]
+    DEBUG_TOOLBAR_CONFIG = {
+        "SHOW_TOOLBAR_CALLBACK": lambda request: True,
+    }
 
 # Application definition
 INSTALLED_APPS = [
@@ -109,6 +110,8 @@ CACHES = {
     },
 }
 
+CACHE_TTL = 2 * 60 * 60  # 2 часа
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -151,37 +154,3 @@ STATIC_ROOT = BASE_DIR.parent / 'static'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,
-    'filters': {
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        },
-    },
-    'formatters': {
-        'additional_verbose': {
-            'format': '\n\033[1;34m({levelname}) | {name} | [{asctime}]\033[23;0;0m\n'
-                      '\033[3;38;5;226mFile "{pathname}:{lineno}"\033[23;38;5;87m - {funcName}()\n'
-                      '\033[1;34mMessage\033[23;38;5;134m "{message}"\033[23;0;0m\n',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'color_console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'additional_verbose',
-            'filters': ['require_debug_true'],
-        },
-    },
-    'loggers': {
-        'server': {
-            'handlers': ['color_console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    }
-}
