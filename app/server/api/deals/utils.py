@@ -80,7 +80,5 @@ def process_deals_csv(file: InMemoryUploadedFile) -> tuple[str, str, int]:
 
     except IntegrityError:
         return 'Error', 'Ошибка при попытке загрузить данные в базу данных', 400
-    from django.db import connection
-    print(connection.queries)
 
     return 'Ok', 'Данные обработаны',  200
