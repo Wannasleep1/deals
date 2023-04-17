@@ -8,16 +8,20 @@ from django.db.models import Sum
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import views
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, schema, parser_classes
+from rest_framework.parsers import MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from server.api.deals.schemas import process_deal_schema
 from server.api.deals.serializers import CustomerListSerializer
 from server.api.deals.utils import process_deals_csv
 from server.apps.deals.models import Customer
 
 
 @api_view(['POST'])
+@schema(process_deal_schema)
+@parser_classes([MultiPartParser])
 def process_deals(request: Request) -> Response:
     """
     View-функция для обработки файла со сделками в формате csv и сохранения результатов в БД.
